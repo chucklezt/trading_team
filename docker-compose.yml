@@ -1,0 +1,127 @@
+version: '3.8'
+
+services:
+  scanner-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - REDIS_HOST=redis
+      - POSTGRES_HOST=postgres
+      - CONFIG_PATH=/config
+      - TRADING_CAPITAL=100000
+    volumes:
+      - ./config:/config
+      - ./logs:/logs
+    depends_on:
+      - redis
+      - postgres
+    restart: unless-stopped
+    networks:
+      - trading-network
+
+  validator-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - REDIS_HOST=redis
+      - POSTGRES_HOST=postgres
+      - CONFIG_PATH=/config
+    volumes:
+      - ./config:/config
+    depends_on:
+      - redis
+      - postgres
+    restart: unless-stopped
+    networks:
+      - trading-network
+
+  risk-manager-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - REDIS_HOST=redis
+      - POSTGRES_HOST=postgres
+      - CONFIG_PATH=/config
+      - TRADING_CAPITAL=100000
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+    volumes:
+      - ./config:/config
+    restart: unless-stopped
+    networks:
+      - trading-network
+
+  executor-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - REDIS_HOST=redis
+      - POSTGRES_HOST=postgres
+      - CONFIG_PATH=/config
+    volumes:
+      - ./config:/config
+      - ./logs:/logs
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+    depends_on:
+      - redis
+      - postgres
+    restart: unless-stopped
+    networks:
+      - trading-network
+
+  reconciler-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - REDIS_HOST=redis
+      - POSTGRES_HOST=postgres
+      - CONFIG_PATH=/config
+    volumes:
+      - ./config:/config
+      - ./logs:/logs
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    networks:
+      - trading-network
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    restart: unless-stopped
+    networks:
+      - trading-network
+
+  postgres:
+    image: timescale/timescaledb:latest-pg15
+    environment:
+      - POSTGRES_DB=trading_db
+      - POSTGRES_USER=trading
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-trading_password}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - trading-network
+
+volumes:
+  redis-data:
+  postgres-data:
+
+networks:
+  trading-network:
+    driver: bridge

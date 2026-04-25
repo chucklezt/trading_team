@@ -1,0 +1,36 @@
+# Core dependencies
+python-dotenv>=1.0.0
+redis>=5.0.0
+aioredis>=2.0.1
+asyncio>=3.4.3
+aiohttp>=3.9.0
+
+# Database
+asyncpg>=0.29.0
+psycopg2-binary>=2.9.9
+timescaledb>=2.0.0
+
+# HTTP requests
+httpx>=0.25.0
+requests>=2.31.0
+
+# Data processing
+pandas>=2.1.0
+numpy>=1.26.0
+
+# Logging and monitoring
+structlog>=23.2.0
+prometheus-client>=0.19.0
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+
+# Utilities
+pyyaml>=6.0.1
+python-dateutil>=2.8.2
+
+# Optional: for reporting
+reportlab>=4.0.0
+pandas>=2.1.0
